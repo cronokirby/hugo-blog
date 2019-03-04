@@ -1,7 +1,7 @@
 ---
 title: "Inauguration"
 date: 2019-03-04T19:48:28+01:00
-draft: true
+draft: false
 description: Another blog redesign, another intro post
 ---
 
