@@ -2,6 +2,7 @@ baseURL = "https://cronokirby.github.io/"
 languageCode = "en-us"
 title = "ShibaCalc"
 theme = "hyde-hyde"
+disqusShortname = "cronokirby-github-io"
 
 [params]
     highlightjsstyle = "atom-one-light"
