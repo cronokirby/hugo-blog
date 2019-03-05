@@ -7,7 +7,7 @@ disqusShortname = "cronokirby-github-io"
 [params]
     highlightjsstyle = "atom-one-light"
     highlightjs = true
-    authorimage = "img/hugo.png"
+    authorimage = "img/crono.png"
 
 [params.social]
     github = "cronokirby"
