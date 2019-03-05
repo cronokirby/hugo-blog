@@ -18,11 +18,6 @@ disqusShortname = "cronokirby-github-io"
     identifier = "posts"
     url = "/posts/"
 [[menu.main]]
-    name = "Portfolio"
-    identifier = "portfolio"
-    weight = 200
-    url = "/portfolio/"
-[[menu.main]]
     name = "About"
     identifer = "about"
     weight = 300
