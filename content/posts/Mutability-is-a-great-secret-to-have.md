@@ -1,7 +1,7 @@
 ---
 title: "Mutability Is a Great Secret To Have"
 date: 2019-03-06T11:39:03+01:00
-draft: true
+draft: false
 description: Mutability is ok, as long as no one knows about it
 ---
 
