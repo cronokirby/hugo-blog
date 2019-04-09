@@ -1,7 +1,7 @@
 ---
 title: "Notes on Ripple"
 date: 2019-04-09T13:04:46+02:00
-draft: true
+draft: false
 description: Thoughts on Ripple, and decentralised network shapes.
 ---
 {{<mermaid/source>}}
@@ -18,7 +18,11 @@ like ripple, and then explain how ripple itself works.
 
 ## Organisation
 One of the tougher problems in taking a normal service
-and decentralising it is how to shape the network.
+and decentralising it is how to shape the network. It's generally
+much easier to have one big server that contains all the logic
+for our service, and then have the clients connect
+independently to that service.
+
 A traditional service looks something like this:
 {{<mermaid/diagram>}}
 graph BT
@@ -30,7 +34,7 @@ graph BT
     2 --- server
     3 --- server
 {{</mermaid/diagram>}}
-We have one big central server, responsible for most of the work.
+We have the big central server, responsible for most of the work.
 When a client wants to send a message to the network, it sends
 a message to the server, and the server in turn propogates that message
 to everyone else. This organisation has a few advantages:
@@ -40,7 +44,12 @@ to everyone else. This organisation has a few advantages:
 
 Because only the big server matters, it's very easy
 to join and leave the network without affecting anyone else.
-The centralised server is also the biggest flaw in the service:
+A new node can simply connect to the server and be completely
+integrated into the swarm. The node can leave at any point with
+no issues, because the central server is still there, and capable
+of handling the messages.
+
+The centralised server, however, is also the biggest flaw in the service:
 if the central server goes down, the entire network does.
 
 If we want to replace this architecture with a decentralised version,
@@ -62,7 +71,7 @@ graph LR
     2 --- 4
     3 --- 4
 {{</mermaid/diagram>}}
-Sending messages isn't very complicated in this scheme, since all
+Sending messages isn't very complicated in this scheme: all
 we need to do is send a message to each of the peers we're connected to.
 The clear problem with this architecture is that we need to maintain (N - 1)
 connections for each peer, given a network of N peers. This is a lot more
@@ -86,9 +95,16 @@ graph LR
     3 --> 4
     4 --> 1
 {{</mermaid/diagram>}}
-When the first peer sends a message, it will eventually receive
-the same message from the fourth peer, at which point it knows
-to not transmit it forward, since it was the originator of that message.
+When a node wants to send a message to the network, it just sends
+it to the node in front of it, and when a node receives a message
+from the node behind it, it passes it forward as well.
+When a node receives a message that it sent, it doesn't
+propagate it forward.
+
+For example, if node 1 wants to send a message "hello",
+it first sends `(1, "hello")` to node 2. The message then
+propagates all the way back to node 1. Upon seeing `(1, "hello")`,
+the first node recognizes itself as the sender, and the loop is closed.
 
 If we compare the number of connections between this scheme and the last,
 we see that we only need 2 connections per node, instead of a growing number,
@@ -134,3 +150,26 @@ graph LR
     2 --> 3
     3 --> 1
 {{</mermaid/diagram>}}
+Notice how node 3 is completely oblivious to this network change.
+The only nodes involved are "new" which wants to join the network,
+as well as 1 and 2, which need to be linked to the new node.
+
+The process of joining the network can be described by the following sequence diagram:
+{{<mermaid/diagram>}}
+sequenceDiagram
+    new->>1: JoinSwarm
+    1-->>new: Referral(2)
+    1->>2: NewPredecessor(new)
+    new->>2: ConfirmPredecessor
+    2-->>1: ConfirmReferral
+{{</mermaid/diagram>}}
+
+This is evidently more complex than in the centralised case, where
+all we needed to do was connect to the central server. Coordination
+between multiple nodes is necessary in a decentralised setting though.
+
+## Final Remarks
+
+This was a 1000-foot overview of [ripple](https://github.com/cronokirby/ripple).
+Hopefully this was interesting or at least somewhat illuminating. For more information
+about ripple, I'd recommend reading the documentation in the git repository :)
