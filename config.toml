@@ -22,3 +22,8 @@ disqusShortname = "cronokirby-github-io"
     identifer = "about"
     weight = 300
     url = "/about/"
+[[menu.main]]
+    name = "Portfolio"
+    identifer = "portfolio"
+    weight = 300
+    url = "/portfolio/"
