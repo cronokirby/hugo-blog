@@ -180,3 +180,38 @@ and makes the algorithm simpler.
 ..AA AAxx xx..
 ```
 Then we save the data for that file in `file.end`.
+
+## Data Structures and Algorithms
+For each of these algorithms, our life is made much easier if we calculate a nicer representation
+of the file structure before hand. That is to say, we'll have a special representation of our
+file structures used for writing the pieces, another for recomposing them, as well as a another,
+used for reading back the pieces.
+
+### Recomposing: Data Structure
+
+The data structure for recomposing pieces together is pretty simple, for each final file in
+the torrent, we keep a list of all its dependencies. That is to say, all the pieces that fit completly
+into it, as well as all `file.end` and `file.start` if those exist.
+
+```haskell
+data Recompose = Recompose [(File, [File])]
+```
+
+To make our algorithm easier, we want to make sure that the dependencies are in the same order as
+they are in the file, so we can reconstruct the file by writing all dependencies in order.
+
+### Recomposing: Algorithm
+The algorithm for recomposition is so simple, that we might as well already get it out of the way.
+This also illustrates the benefit of this approach of using the most suitable data structure for
+implementing our algorithms.
+
+```haskell
+recompose (Recompose mappings) =
+    forM_ mappings $ \(file, deps) -> do
+        when (allFilesExist deps) $ do
+            writeAllTo deps file
+            removeAll deps
+```
+
+For each file, we check if all its dependencies have already been written to,
+in which case we can reconstruct the file by concatenating all the dependencies.
