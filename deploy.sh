@@ -3,10 +3,10 @@ STATUS="$(git status)"
 if [[ $STATUS == *"nothing to commit, working tree clean"* ]]
 then
     hugo
-    sed -i '/public' ./.gitignore
+    sed -i '/public/d' ./.gitignore
     git add .
     git commit -m "Edit .gitignore to publish"
-    git push origin `git subtree split --prefix publi master`:gh-pages --force
+    git push origin `git subtree split --prefix public master`:gh-pages --force
     git reset HEAD~
     git checkout .gitignore
 else
