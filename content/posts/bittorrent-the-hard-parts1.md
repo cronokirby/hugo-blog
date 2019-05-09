@@ -1,6 +1,7 @@
 ---
 title: "Bittorrent, the Hard Parts - 1"
 date: 2019-05-03T16:54:09+02:00
+description: "An algorithm for piece serialization"
 draft: false
 ---
 
@@ -215,3 +216,33 @@ recompose (Recompose mappings) =
 
 For each file, we check if all its dependencies have already been written to,
 in which case we can reconstruct the file by concatenating all the dependencies.
+
+### Saving: Data Structure
+In order to save each piece, we need to know which files the piece maps to,
+and how many bytes are in each piece. Our data structure thus looks like this:
+
+```haskell
+data SavePieces = SavePieces (Piece -> [(Int, File)])
+```
+
+This contains a list of `(count, file)` tuples, listing the
+files the piece needs to be saved into, in the order they appear, as well
+as how many bytes of the piece should be saved in that file.
+
+### Saving: Algorithm
+
+This algorithm is better expressed using an imperative formulation,
+but a functional fold would be able to accomplish the same thing:
+
+```py
+def save(piece, mappings):
+    bits = mappings(piece)
+    offset = 0
+    for (count, file) in bits:
+        write(file, piece[offset:offset+count])
+        offset += count
+```
+
+We just go linearly through each of the files, and save the right amount of the piece.
+For this to work correctly, we need to make sure that the order of the files and counts
+is correct, otherwise we'll be saving the wrong part of the piece.
