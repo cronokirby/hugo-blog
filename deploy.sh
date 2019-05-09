@@ -1,4 +1,5 @@
 #!/bin/sh
+source ~/.profile
 
 if [[ $(git status -s) ]]
 then
