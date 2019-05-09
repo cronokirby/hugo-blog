@@ -1,24 +1,14 @@
-#!/bin/bash
+STATUS="$(git status)"
 
-echo -e "\033[0;32mDeploying updates to GitHub...\033[0m"
-
-# Build the project.
-hugo # if using a theme, replace with `hugo -t <YOURTHEME>`
-
-# Go To Public folder
-cd public
-# Add changes to git.
-git add .
-
-# Commit changes.
-msg="rebuilding site `date`"
-if [ $# -eq 1 ]
-  then msg="$1"
+if [[ $STATUS == *"nothing to commit, working tree clean"* ]]
+then
+    hugo
+    sed -i '/public' ./.gitignore
+    git add .
+    git commit -m "Edit .gitignore to publish"
+    git push origin `git subtree split --prefix publi master`:gh-pages --force
+    git reset HEAD~
+    git checkout .gitignore
+else
+    echo "Need clean working directory to publish"
 fi
-git commit -m "$msg"
-
-# Push source and build repos.
-git push origin master
-
-# Come Back up to the Project Root
-cd ..
