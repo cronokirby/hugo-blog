@@ -246,3 +246,67 @@ def save(piece, mappings):
 We just go linearly through each of the files, and save the right amount of the piece.
 For this to work correctly, we need to make sure that the order of the files and counts
 is correct, otherwise we'll be saving the wrong part of the piece.
+
+### Reading: Data Structure
+The main complexity with reading pieces from disk, is that the piece may be in different locations,
+at different times. At the start, a piece might be in different standalone files, some of which get merged
+into a larger file. For example, a piece might map to `B.end` and `A.start`, in which case we need to know
+to read from `B.end` if it exists, otherwise from the right spot in `B`, and the same with `A`. Note that
+it might be the case that B is saved, but A is not, and vice versa.
+
+Let's start with a mapping from each piece to the locations it's stored in:
+```haskell
+data ReadPieces = ReadPieces (Piece -> [Location])
+```
+
+Now, a location where a piece can be must contain both the small file containing just information for that piece,
+and then the large file where the piece will eventually be embedded.
+
+Thus, we have:
+```haskell
+data Location = Location Embedded Complete
+
+type Offset = Int
+type Count = Int
+data Embedded = Embedded File Offset Count
+
+data Complete = Complete File
+```
+
+The embedded location contains the file, as well as the offset and count,
+allowing us to easily read the piece from the larger file. For the complete location,
+we can just read that section by reading the entire small file.
+
+We need to store both locations, because we need to have both the complete, smaller location
+where that part of the piece is first stored, as well as the larger section of a big file where
+the piece will eventually be located. We could keep all the small, temporary files around
+until the entire torrent is completed, but even once we've completed the whole torrent, we still
+need to be able to read pieces in order to upload parts of the file to other pieces.
+
+### Reading: Algorithm
+The algorithm can be given now that we've seen a good way to organise the data for this
+task:
+
+```haskell
+read (ReadPieces mapping) piece =
+    concatBS . forM (mapping piece) $ \l -> do
+        let Location e c = l
+            Embedded fileE offset count = e
+            Complete fileC = c
+        complete <- fileExists fileC
+        if complete
+            then readAll fileC
+            else readAt offset count fileE
+```
+
+We can safely assume that if the smaller, but complete, location no longer exists,
+then this can only be because the larger file now does. We just concatenate the bytes
+for each section of the piece, which we first try and read from the complete file, if it exists,
+otherwise we go and read it from the embedded location of the larger file.
+
+### Interlude
+We've made our life much easier by seperating everything into different distinct tasks,
+and using the right data structure for each of those tasks. Using the right data structure
+makes the algorithm quite simple. One thing we have yet to see, however, is how to construct
+these data structures from the information about the torrent file itself. That will have to wait
+for the next post in this series; stay tuned for the next post then :)
